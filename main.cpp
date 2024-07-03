@@ -162,13 +162,13 @@ int main_(int argc, char *argv[]) {
 			ComputationTimeExperiment3();
 			return 0;
 		}
-		if (std::string(argv[1]) == std::string("HeatResistanceExperiment")) {
-			HeatResistanceExperiment("stability_dataset/ecoli_4v9d_ndb_aa.txt", 0.5);
-			HeatResistanceExperiment("stability_dataset/thermophilus_4v51_ndb_aa.txt", 0.5);
-			HeatResistanceExperimentPK("stability_dataset/ecoli_4v9d_ndb_aa.txt", "stability_dataset/ecoli_4v9d_ndb_aa_structure.txt", 0.5);
-			HeatResistanceExperimentPK("stability_dataset/thermophilus_4v51_ndb_aa.txt", "stability_dataset/thermophilus_4v51_ndb_aa.txt", 0.5);
-			return 0;
-		}
+		// if (std::string(argv[1]) == std::string("HeatResistanceExperiment")) {
+		// 	HeatResistanceExperiment("stability_dataset/ecoli_4v9d_ndb_aa.txt", 0.5);
+		// 	HeatResistanceExperiment("stability_dataset/thermophilus_4v51_ndb_aa.txt", 0.5);
+		// 	// HeatResistanceExperimentPK("stability_dataset/ecoli_4v9d_ndb_aa.txt", "stability_dataset/ecoli_4v9d_ndb_aa_structure.txt", 0.5);
+		// 	// HeatResistanceExperimentPK("stability_dataset/thermophilus_4v51_ndb_aa.txt", "stability_dataset/thermophilus_4v51_ndb_aa.txt", 0.5);
+		// 	return 0;
+		// }
 		if (std::string(argv[1]) == std::string("AccuracyExperiment151")) {
 			AccuracyExperiment2();
 			return 0;
@@ -194,9 +194,58 @@ int main_(int argc, char *argv[]) {
 			}
 			return 0;
 		}
+		if (std::string(argv[1]) == std::string("HeatResistanceExperiment")) {
+			// ./rintc HeatResistanceExperiment inputfile outputfile
+			const std::string inputfile = argv[2];
+			const std::string CLoutputfile = argv[3];
+			std::cout << "Heat resistance experiment on " << inputfile << " is performed." << std::endl;
+
+
+
+			auto start_time = std::chrono::high_resolution_clock::now();
+			HeatResistanceExperiment(inputfile, CLoutputfile, 0.5);
+			auto end_time = std::chrono::high_resolution_clock::now();
+			auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+    		std::cout << "HeatResistanceExperiment の実行時間: " << duration.count() << " msec" << std::endl;
+			return 0;
+		}
+		else if (std::string(argv[1]) == std::string("mfeExperiment")) {
+				// ./rintc HeatResistanceExperiment inputfile outputfile
+				// const std::string inputfile = argv[2];
+				// const std::string CLoutputfile = argv[3];
+				// const std::string MFEoutputfile = argv[4]
+				// const int theta = -1.0; // theta < 0.0 で HeatResistanceExperiment は MFE を吐いて終わる。
+				// std::cout << "MFE experiment on " << inputfile << " is performed." << std::endl;
+
+
+				// auto start_time = std::chrono::high_resolution_clock::now();
+				// HeatResistanceExperiment(inputfile, MFEoutputfile, theta);
+				// auto end_time = std::chrono::high_resolution_clock::now();
+				// auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+				// std::cout << "mfeExperiment の実行時間: " << duration.count() << " msec" << std::endl;
+				return 0;
+		}
 	}
 	if (argc == 5) {
+		if (std::string(argv[1]) == std::string("HeatResistanceExperiment")) {
+			// ./rintc HeatResistanceExperiment inputfile outputfile
+			const std::string inputfile = argv[2];
+			const std::string CLoutputfile = argv[3];
+			float theta = std::atof(argv[4]);
+			std::cout << "theta = " << theta << std::endl;
+			std::cout << "Heat resistance experiment on " << inputfile << " is performed." << std::endl;
 
+
+			auto start_time = std::chrono::high_resolution_clock::now();
+			HeatResistanceExperiment(inputfile, CLoutputfile, theta);
+			auto end_time = std::chrono::high_resolution_clock::now();
+			auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+    		std::cout << "HeatResistanceExperiment の実行時間: " << duration.count() << " msec" << std::endl;
+			return 0;
+		}
+
+		
+		std::cout << "verification starts." << std::endl;
 		const std::string sequence = std::string(argv[1]);
 		const std::string structure = std::string(argv[2]);
 		const int W = std::stoi(std::string(argv[3]));
@@ -306,6 +355,8 @@ int main_(int argc, char *argv[]) {
 		return 1;
 	}
 
+
+
 	std::cout << "Error" << std::endl;
 	return 1;
 
@@ -318,6 +369,7 @@ int main_(int argc, char *argv[]) {
 
 int main(int argc, char *argv[]) {
 
+	std::cout << "argc = " << argc << std::endl;
 	return rintdwr::main_(argc, argv);
 
 }
