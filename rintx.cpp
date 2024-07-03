@@ -77,7 +77,7 @@ template<typename Comp>std::vector<Comp>ComputeRintD1Dim(const RintX1DOptions& o
 
 	//[Mori et al., 2014].{(19)...(23)}
 	//x is one of the (max_dim_)-th root of 1.
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for schedule(auto)
 	for (int x = 0; x < max_dim_; ++x) {
 
 //#pragma omp critical
@@ -275,7 +275,7 @@ template<typename Comp>std::vector<std::vector<Comp>>ComputeRintD2Dim(const Rint
 
 	std::vector<std::vector<Comp>>zeta(max_dim_1, std::vector<Comp>(max_dim_2, Comp(0.0, 0.0)));
 
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for schedule(auto)
 	for (int x = 0; x < max_dim_1 * max_dim_2; ++x) {
 		const int x1 = x % max_dim_1;
 		const int x2 = x / max_dim_1;
@@ -492,7 +492,7 @@ template<typename Comp>std::pair<std::vector<Comp>, std::vector<std::vector<std:
 	std::vector<Comp>zeta(max_dim_, Comp(0.0, 0.0));
 	std::vector<std::vector<Comp>>prob((n + 1) * (options.max_span + 1), std::vector<Comp>(max_dim_, Comp(0.0, 0.0)));
 
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for schedule(auto)
 	for (int x = 0; x < max_dim_; ++x) {
 		
 //#pragma omp critical
@@ -727,7 +727,7 @@ template<typename Comp>std::pair<std::vector<Comp>, std::vector<std::vector<std:
 	for (int i = 1; i <= n; ++i) for (int j = i + 1; j <= n && (j - i) <= options.max_span; ++j)index.push_back(std::make_pair(i, j));
 
 	int count = 0;
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for schedule(auto)
 	for (int i = 0; i < int(index.size()); ++i) {
 
 //#pragma omp critical
@@ -755,7 +755,7 @@ template<typename Comp>std::pair<std::vector<Comp>, std::vector<std::vector<std:
 
 	//Fourier transform is not used. Time complexity is O(NW^3Hmax^3)
 
-	//ƒt[ƒŠƒG•ÏŠ·‚ğg‚í‚È‚¢BŒvZ—Ê‚ÍNW^3Hmax^3
+	//ï¿½tï¿½[ï¿½ï¿½ï¿½Gï¿½ÏŠï¿½ï¿½ï¿½ï¿½gï¿½ï¿½È‚ï¿½ï¿½Bï¿½vï¿½Zï¿½Ê‚ï¿½NW^3Hmax^3
 
 	typedef decltype(Comp::real) RealScalar;
 
@@ -1117,7 +1117,7 @@ template<typename Comp>std::pair<std::vector<std::vector<Comp>>, std::vector<std
 			max_dim_1, std::vector<Comp>(
 				max_dim_2, Comp(0.0, 0.0))));
 
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for schedule(auto)
 	for (int x = 0; x < max_dim_1 * max_dim_2; ++x) {
 
 		const int x1 = x % max_dim_1;
@@ -1357,7 +1357,7 @@ template<typename Comp>std::pair<std::vector<std::vector<Comp>>, std::vector<std
 	for (int i = 1; i <= n; ++i) for (int j = i + 1; j <= n && (j - i) <= options.max_span; ++j)index.push_back(std::make_pair(i, j));
 
 	int count = 0;
-#pragma omp parallel for schedule(dynamic, 1)
+#pragma omp parallel for schedule(auto)
 	for (int i = 0; i < int(index.size()); ++i) {
 		const int a = index[i].first;
 		const int b = index[i].second;
@@ -1549,11 +1549,11 @@ std::pair<std::vector<Floating>, std::vector<std::vector<std::vector<Floating>>>
 	const std::vector<WideComplexNumber<Floating>> z,
 	const std::vector<std::vector<std::vector<WideComplexNumber<Floating>>>> p) {
 
-	//ComputeHagio‚Ì•Ô‚è’l‚Ílog scale‚ÅA‚©‚Â"“à‘¤•ª”zŠÖ”"‚Æ"‰–Šî‘ÎŠm—¦s—ñ‚Ì¬•ª‚Ì•ªq"‚É•ª‚©‚ê‚½ó‘Ô‚È‚Ì‚ÅA
-	//‚±‚ê‚ğ‰–Šî‘ÎŠm—¦s—ñ‚ÌŒ`‚É®‚¦‚éB
+	//ComputeHagioï¿½Ì•Ô‚ï¿½lï¿½ï¿½log scaleï¿½ÅAï¿½ï¿½ï¿½ï¿½"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½zï¿½Öï¿½"ï¿½ï¿½"ï¿½ï¿½ï¿½ï¿½ÎŠmï¿½ï¿½ï¿½sï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½Ì•ï¿½ï¿½q"ï¿½É•ï¿½ï¿½ï¿½ï¿½ê‚½ï¿½ï¿½Ô‚È‚Ì‚ÅA
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÎŠmï¿½ï¿½ï¿½sï¿½ï¿½ÌŒ`ï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½B
 
-	//“ü—Í: ComputeHagio1dim‚Ì•Ô‚è’l‚ÌAfirst‚ªz‚Åsecond‚ªp‚Æ‚·‚éB
-	//•Ô‚è’l: first‚Íƒnƒ~ƒ“ƒO‹——£‚²‚Æ‚Ì‘¶İŠm—¦‚ÅAsecond‚Íƒnƒ~ƒ“ƒO‹——£‚²‚Æ‚Ì‰–Šî‘ÎŠm—¦s—ñB
+	//ï¿½ï¿½ï¿½ï¿½: ComputeHagio1dimï¿½Ì•Ô‚ï¿½lï¿½ÌAfirstï¿½ï¿½zï¿½ï¿½secondï¿½ï¿½pï¿½Æ‚ï¿½ï¿½ï¿½B
+	//ï¿½Ô‚ï¿½l: firstï¿½Íƒnï¿½~ï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚Ì‘ï¿½ï¿½İŠmï¿½ï¿½ï¿½ÅAsecondï¿½Íƒnï¿½~ï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚Ì‰ï¿½ï¿½ï¿½ÎŠmï¿½ï¿½ï¿½sï¿½ï¿½B
 
 	const int dim = int(z.size()) - 1;
 	const int n = int(p[0].size()) - 1;
@@ -1593,8 +1593,8 @@ std::pair<std::vector<IntervalVar>, std::vector<std::vector<std::vector<Interval
 	const std::vector<WideComplexNumber<IntervalVar>> z,
 	const std::vector<std::vector<std::vector<WideComplexNumber<IntervalVar>>>> p) {
 
-	//ComputeHagio‚Ì•Ô‚è’l‚Ílog scale‚ÅA‚©‚Â“à‘¤•ª”zŠÖ”‚Æ‰–Šî‘ÎŠm—¦s—ñ‚Ì•ªq‚É•ª‚©‚ê‚½ó‘Ô‚È‚Ì‚ÅA
-	//‚±‚ê‚ğ‰–Šî‘ÎŠm—¦s—ñ‚ÌŒ`‚É®‚¦‚éB
+	//ComputeHagioï¿½Ì•Ô‚ï¿½lï¿½ï¿½log scaleï¿½ÅAï¿½ï¿½ï¿½Â“ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½zï¿½Öï¿½ï¿½Æ‰ï¿½ï¿½ï¿½ÎŠmï¿½ï¿½ï¿½sï¿½ï¿½Ì•ï¿½ï¿½qï¿½É•ï¿½ï¿½ï¿½ï¿½ê‚½ï¿½ï¿½Ô‚È‚Ì‚ÅA
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÎŠmï¿½ï¿½ï¿½sï¿½ï¿½ÌŒ`ï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½B
 
 	const int dim = int(z.size()) - 1;
 	const int n = int(p[0].size()) - 1;
@@ -1649,7 +1649,7 @@ std::pair<std::vector<IntervalVar>, std::vector<std::vector<std::vector<Interval
 
 std::vector<Floating>RegularizeRintD1Dim(const std::vector<WideComplexNumber<Floating>>& result) {
 
-	//ComputeRintD1Dim‚ÌŒ‹‰Ê‚ğÀ”‚É‚µ‚ÄA‘˜a1‚É³‹K‰»‚µ‚ÄAlogsumexp‚Å‚Í‚È‚¢•’Ê‚Ì”’lŒ^‚É‚µ‚Ä•Ô‚·B
+	//ComputeRintD1Dimï¿½ÌŒï¿½ï¿½Ê‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É‚ï¿½ï¿½ÄAï¿½ï¿½ï¿½a1ï¿½Éï¿½ï¿½Kï¿½ï¿½ï¿½ï¿½ï¿½ÄAlogsumexpï¿½Å‚Í‚È‚ï¿½ï¿½ï¿½ï¿½Ê‚Ìï¿½ï¿½lï¿½^ï¿½É‚ï¿½ï¿½Ä•Ô‚ï¿½ï¿½B
 
 	typedef WideComplexNumber<Floating> Comp;
 	const int dim1 = int(result.size());
@@ -1659,7 +1659,7 @@ std::vector<Floating>RegularizeRintD1Dim(const std::vector<WideComplexNumber<Flo
 		sum += result[i];
 	}
 
-	//‚±‚Ì“_‚ÅAŒ‹‰Ê‚Ì‘˜a‚Íexp(sum.log_scale)‚É‚Ù‚Ú“™‚µ‚¢B
+	//ï¿½ï¿½ï¿½Ìï¿½ï¿½_ï¿½ÅAï¿½ï¿½ï¿½Ê‚Ì‘ï¿½ï¿½aï¿½ï¿½exp(sum.log_scale)ï¿½É‚Ù‚Ú“ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
 
 	std::vector<Floating> ans(dim1, Floating(0.0));
 	for (int i = 0; i < dim1; ++i)if (result[i].real > Floating(0.0)) {
@@ -1684,7 +1684,7 @@ std::vector<Floating>RegularizeRintD1Dim(const std::vector<WideComplexNumber<Flo
 }
 std::vector<std::vector<Floating>>RegularizeRintD2Dim(const std::vector<std::vector<WideComplexNumber<Floating>>>& result) {
 
-	//ComputeRintD2Dim‚ÌŒ‹‰Ê‚ğÀ”‚É‚µ‚ÄA‘˜a1‚É³‹K‰»‚µ‚ÄAlogsumexp‚Å‚Í‚È‚¢•’Ê‚Ì”’lŒ^‚É‚µ‚Ä•Ô‚·B
+	//ComputeRintD2Dimï¿½ÌŒï¿½ï¿½Ê‚ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É‚ï¿½ï¿½ÄAï¿½ï¿½ï¿½a1ï¿½Éï¿½ï¿½Kï¿½ï¿½ï¿½ï¿½ï¿½ÄAlogsumexpï¿½Å‚Í‚È‚ï¿½ï¿½ï¿½ï¿½Ê‚Ìï¿½ï¿½lï¿½^ï¿½É‚ï¿½ï¿½Ä•Ô‚ï¿½ï¿½B
 
 	typedef WideComplexNumber<Floating> Comp;
 	const int dim1 = int(result.size());
@@ -1695,7 +1695,7 @@ std::vector<std::vector<Floating>>RegularizeRintD2Dim(const std::vector<std::vec
 		sum += result[i][j];
 	}
 
-	//‚±‚Ì“_‚ÅAŒ‹‰Ê‚Ì‘˜a‚Íexp(sum.log_scale)‚É‚Ù‚Ú“™‚µ‚¢B
+	//ï¿½ï¿½ï¿½Ìï¿½ï¿½_ï¿½ÅAï¿½ï¿½ï¿½Ê‚Ì‘ï¿½ï¿½aï¿½ï¿½exp(sum.log_scale)ï¿½É‚Ù‚Ú“ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
 
 	std::vector<std::vector<Floating>> ans(dim1, std::vector<Floating>(dim2, Floating(0.0)));
 	for (int i = 0; i < dim1; ++i)for (int j = 0; j < dim2; ++j)if (result[i][j].real > Floating(0.0)) {
@@ -1723,11 +1723,11 @@ std::pair<std::vector<std::vector<Floating>>, std::vector<std::vector<std::vecto
 	const std::vector<std::vector<WideComplexNumber<Floating>>> z,
 	const std::vector<std::vector<std::vector<std::vector<WideComplexNumber<Floating>>>>> p) {
 
-	//ComputeHagio‚Ì•Ô‚è’l‚Ílog scale‚ÅA‚©‚Â"“à‘¤•ª”zŠÖ”"‚Æ"‰–Šî‘ÎŠm—¦s—ñ‚Ì¬•ª‚Ì•ªq"‚É•ª‚©‚ê‚½ó‘Ô‚È‚Ì‚ÅA
-	//‚±‚ê‚ğ‰–Šî‘ÎŠm—¦s—ñ‚ÌŒ`‚É®‚¦‚éB
+	//ComputeHagioï¿½Ì•Ô‚ï¿½lï¿½ï¿½log scaleï¿½ÅAï¿½ï¿½ï¿½ï¿½"ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½zï¿½Öï¿½"ï¿½ï¿½"ï¿½ï¿½ï¿½ï¿½ÎŠmï¿½ï¿½ï¿½sï¿½ï¿½Ìï¿½ï¿½ï¿½ï¿½Ì•ï¿½ï¿½q"ï¿½É•ï¿½ï¿½ï¿½ï¿½ê‚½ï¿½ï¿½Ô‚È‚Ì‚ÅA
+	//ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ÎŠmï¿½ï¿½ï¿½sï¿½ï¿½ÌŒ`ï¿½Éï¿½ï¿½ï¿½ï¿½ï¿½B
 
-	//“ü—Í: ComputeHagio2dim‚Ì•Ô‚è’l‚ÌAfirst‚ªz‚Åsecond‚ªp‚Æ‚·‚éB
-	//•Ô‚è’l: first‚Íƒnƒ~ƒ“ƒO‹——£‚²‚Æ‚Ì‘¶İŠm—¦‚ÅAsecond‚Íƒnƒ~ƒ“ƒO‹——£‚²‚Æ‚Ì‰–Šî‘ÎŠm—¦s—ñB
+	//ï¿½ï¿½ï¿½ï¿½: ComputeHagio2dimï¿½Ì•Ô‚ï¿½lï¿½ÌAfirstï¿½ï¿½zï¿½ï¿½secondï¿½ï¿½pï¿½Æ‚ï¿½ï¿½ï¿½B
+	//ï¿½Ô‚ï¿½l: firstï¿½Íƒnï¿½~ï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚Ì‘ï¿½ï¿½İŠmï¿½ï¿½ï¿½ÅAsecondï¿½Íƒnï¿½~ï¿½ï¿½ï¿½Oï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ‚Ì‰ï¿½ï¿½ï¿½ÎŠmï¿½ï¿½ï¿½sï¿½ï¿½B
 
 	const int dim1 = int(z.size()) - 1;
 	const int dim2 = int(z[0].size()) - 1;
@@ -2082,7 +2082,7 @@ std::vector<std::string> ComputeRintW1Dim_1(
 //	for (int i = 1; i <= n; ++i) for (int j = i + 1; j <= n && (j - i) <= options.max_span; ++j)index.push_back(std::make_pair(i, j));
 //
 //	int count = 0;
-//#pragma omp parallel for schedule(dynamic, 1)
+//#pragma omp parallel for schedule(auto)
 //	for (int i = 0; i < int(index.size()); ++i) {
 //
 //#pragma omp critical
