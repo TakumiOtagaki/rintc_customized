@@ -29,7 +29,8 @@ int ComputeBestMaxSpan(
 	const int sample_amount,
 	const double threshold_parameter);
 
-void HeatResistanceExperiment(const std::string filename, double threshold);
+// void HeatResistanceExperiment(const std::string filename,  double threshold);
+void HeatResistanceExperiment(const std::string filename, const std::string CLoutputfile, double threshold);
 
 void HeatResistanceExperimentPK(const std::string sequencefilename, const std::string structurefilename, double threshold);
 
