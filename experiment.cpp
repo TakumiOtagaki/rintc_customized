@@ -19,13 +19,14 @@ Copyright (c) 2019 Hiroki Takizawa
 #include <chrono>
 #include <sstream>
 #include <thread>
+#include <omp.h>
 
 //#ifdef _MSC_VER
-//// ÀŒ±“I‚ÈÀ‘•‚ğg‚¤
+//// ï¿½ï¿½ï¿½ï¿½ï¿½Iï¿½Èï¿½ï¿½ï¿½ï¿½ï¿½ï¿½gï¿½ï¿½
 //#include <experimental/filesystem>
 //namespace fs = std::experimental::filesystem;
 //#else
-//// ƒtƒ@ƒCƒ‹ƒVƒXƒeƒ€‚ğƒTƒ|[ƒg‚µ‚Ä‚¢‚é
+//// ï¿½tï¿½@ï¿½Cï¿½ï¿½ï¿½Vï¿½Xï¿½eï¿½ï¿½ï¿½ï¿½ï¿½Tï¿½|ï¿½[ï¿½gï¿½ï¿½ï¿½Ä‚ï¿½ï¿½ï¿½
 //#include <filesystem>
 //namespace fs = std::filesystem;
 //#endif
@@ -699,12 +700,15 @@ void AccuracyExperiment2() {
 }
 
 
-void HeatResistanceExperiment(const std::string filename, double threshold) {
-	//CentroidFold‚ÅƒŠƒtƒ@ƒŒƒ“ƒXæ‚Á‚ÄHagio¨æ‚è’¼‚µ‚ÄMori
-
+void HeatResistanceExperiment(const std::string filename, const std::string CLoutputfile, double threshold) {
+	//CentroidFoldï¿½Åƒï¿½ï¿½tï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½Hagioï¿½ï¿½ï¿½ï¿½è’¼ï¿½ï¿½ï¿½ï¿½Mori
 	//temp <- [37, 55]
 
+	// ï¿½ï¿½ï¿½ñ‰»‚Ì‹Kï¿½ï¿½
+	std::cout << "omp_get_max_threads(): " << omp_get_max_threads() << std::endl;
+
 	const std::string rrna = ReadFasta1(filename);
+	std::cout << "sequence :" << rrna << std::endl;
 	const Floating gamma = Floating(1.0);
 	const int span_default = 100;
 
@@ -720,14 +724,14 @@ void HeatResistanceExperiment(const std::string filename, double threshold) {
 
 	options.sequence = rrna;
 	options.max_span = std::min(int(options.sequence.size()), span_default);
-	std::cout << "1" << std::endl;
+	std::cout << "1. Simple McCaskilWide Starts." << std::endl;
 	const auto bppm = SimpleMcCaskillWide(options.sequence, options.param_file_name, options.temperature, options.max_span, options.max_loop).first;
-	std::cout << "2" << std::endl;
+	std::cout << "2. GetCentroidFoldMcCaskil Starts." << std::endl;
 	const std::string old_ref = GetCentroidFoldMcCaskill(options.sequence, options.max_span, bppm, gamma, options.max_loop);
 	options.reference_structure1 = old_ref;
-	std::cout << "3" << std::endl;
+	std::cout << "3. VerifyAndParseStructure Starts." << std::endl;
 	options.S1 = VerifyAndParseStructure(options.reference_structure1, options.sequence, options.max_span, options.max_loop);
-	std::cout << "4" << std::endl;
+	std::cout << "4. ComputeMaxHammingDistance Starts" << std::endl;
 	options.max_dim1 = ComputeMaxHammingDistance(options.sequence, options.S1, options.max_span, options.max_loop);
 
 	//{
@@ -769,14 +773,15 @@ void HeatResistanceExperiment(const std::string filename, double threshold) {
 	//	outputfile.close();
 	//}
 
-	std::cout << "start: Hagiotool for making better reference" << std::endl;
+	std::cout << "start: Hagiotool for making better reference (ComputeRintW 1Dim) (parallel computing.)" << std::endl;
 	const auto hagio = ComputeRintW1Dim<WideComplexNumber<Floating>>(options);
-	std::cout << "ToBppm..." << std::endl;
+	std::cout << "ToBppm...(RintW 1Dim to BPPM)" << std::endl;
 	const auto hagio_result = RintW1DimToBppm(hagio.first, hagio.second);
 	std::cout << "end: Hagiotool for making better reference" << std::endl;
-	//R‚ÌBPPM‚ğ‹‚ß‚é
+	//ï¿½Rï¿½ï¿½BPPMï¿½ï¿½ï¿½ï¿½ï¿½ß‚ï¿½
 
-	//vector<float>‚ğ“ü—Í‚µ‚ÄA˜A‘±‚·‚é•”•ª—ñ‚Å‘˜a‚ª0.1ˆÈã‚É‚È‚é‚æ‚¤‚ÈÅ’Z‚Ì‚à‚Ì‚Ì¶’[‚ÌƒCƒ“ƒfƒbƒNƒX‚ğo—Í‚·‚éŠÖ”‚ğì‚éB
+	// starts to prepare for centroid fold.
+	//vector<float>ï¿½ï¿½ï¿½ï¿½Í‚ï¿½ï¿½ÄAï¿½Aï¿½ï¿½ï¿½ï¿½ï¿½é•”ï¿½ï¿½ï¿½ï¿½Å‘ï¿½ï¿½aï¿½ï¿½0.1ï¿½Èï¿½É‚È‚ï¿½æ‚¤ï¿½ÈÅ’Zï¿½Ì‚ï¿½ï¿½Ì‚Ìï¿½ï¿½[ï¿½ÌƒCï¿½ï¿½ï¿½fï¿½bï¿½Nï¿½Xï¿½ï¿½ï¿½oï¿½Í‚ï¿½ï¿½ï¿½Öï¿½ï¿½ï¿½ï¿½ï¿½ï¿½B
 	auto func1 = [&](const double sum) {
 		int ansL = -1, ansLen = hagio_result.first.size();
 		for (int i = 0; i < hagio_result.first.size(); ++i) {
@@ -796,7 +801,7 @@ void HeatResistanceExperiment(const std::string filename, double threshold) {
 		return ansL;
 	};
 
-	//¶’[‚ÌƒCƒ“ƒfƒbƒNƒX‚ğo—Í‚·‚éB
+	//ï¿½ï¿½ï¿½[ï¿½ÌƒCï¿½ï¿½ï¿½fï¿½bï¿½Nï¿½Xï¿½ï¿½ï¿½oï¿½Í‚ï¿½ï¿½ï¿½B
 	auto func2 = [&](const double sum, const int ansL) {
 		double actual_sum = 0.0;
 		int ansR = -1;
@@ -810,7 +815,7 @@ void HeatResistanceExperiment(const std::string filename, double threshold) {
 		return ansR;
 	};
 
-	//V‚µ‚¢ƒŠƒtƒ@ƒŒƒ“ƒX‚ğì‚é‚½‚ß‚ÌBPPM‚ğ‹‚ß‚éB
+	//ï¿½Vï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½tï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½é‚½ï¿½ß‚ï¿½BPPMï¿½ï¿½ï¿½ï¿½ï¿½ß‚ï¿½B
 	auto func3 = [&](const int ansL, const int ansR) {
 
 		double actual_sum = 0.0;
@@ -847,13 +852,25 @@ void HeatResistanceExperiment(const std::string filename, double threshold) {
 	std::cout << "6" << std::endl;
 	options.max_dim1 = ComputeMaxHammingDistance(options.sequence, options.S1, options.max_span, options.max_loop);
 
+	const int n = int(options.sequence.size());
+	int TemperatureArray[15] = {10, 20, 30, 37, 40, 43, 46, 49, 55, 60, 65, 70, 80, 90, 100};
+	int TempArraySize = 15;
+
+
+	std::ofstream CLofs(CLoutputfile);
+	if (!CLofs.is_open()) {
+			std::cerr << "file cannot be opened" << std::endl;
+		}
+	CLofs << ">len(seq)=" << n << std::endl;
+
 	{
 		std::vector<std::vector<int>>result;
 		std::cout << "start: credibility limit(new ref)" << std::endl;
-		for (int i = 37; i <= 55; i += 2) {
-			options.temperature = double(i);
+		for (int i = 0; i < TempArraySize; i += 1) {
+			options.temperature = double(TemperatureArray[i]);
 
-			const int n = int(options.sequence.size());
+			// const int n = int(options.sequence.size());
+			// tmp = z(x)
 			const auto tmp = ComputeRintD1Dim<WideComplexNumber<Floating>>(options);
 			const auto mori_plot = RegularizeRintD1Dim(tmp);
 			Floating sum = Floating(0.0);
@@ -866,10 +883,15 @@ void HeatResistanceExperiment(const std::string filename, double threshold) {
 				}
 			}
 
-			std::cout << i << " " << CL << " (new ref)" << std::endl;
-			result.push_back(std::vector<int>{i, CL});
 
-			std::ofstream outputfile(std::string("result_mori_plot(new ref)_temp_") + std::to_string(i) + std::string("_") + filename + std::string(".txt"));
+			std::cout << options.temperature << " " << CL << " (new ref)" << std::endl;
+			result.push_back(std::vector<int>{int(options.temperature), CL});
+
+
+			CLofs << options.temperature << "," << CL << std::endl;
+
+
+			std::ofstream outputfile(std::string("result_mori_plot(new ref)_temp_") + std::to_string(int(options.temperature)) + std::string("_") + filename + std::string(".txt"));
 			for (int j = 0; j <= options.max_dim1; ++j) {
 				outputfile << j << " " << mori_plot[j] << std::endl;
 			}
@@ -878,7 +900,7 @@ void HeatResistanceExperiment(const std::string filename, double threshold) {
 		}
 		std::cout << "end: credibility limit(new ref)" << std::endl;
 
-		std::ofstream outputfile(std::string("result_credibility_limit(new ref)_") + filename + std::string(".txt"));
+		std::ofstream outputfile(std::string("result/credibility_limit(new ref)_") + filename + std::string(".txt"));
 		outputfile << ansL << std::endl;
 		outputfile << ansR << std::endl;
 		outputfile << new_ref << std::endl;
@@ -887,6 +909,7 @@ void HeatResistanceExperiment(const std::string filename, double threshold) {
 		}
 		outputfile.close();
 	}
+	CLofs.close();
 }
 
 void HeatResistanceExperimentPK(const std::string sequencefilename, const std::string structurefilename, double threshold) {
@@ -956,7 +979,7 @@ void HeatResistanceExperimentPK(const std::string sequencefilename, const std::s
 }
 
 void RrnaAccuracyExperiment(const std::string filename) {
-	//CentroidFold‚ÅƒŠƒtƒ@ƒŒƒ“ƒXæ‚Á‚ÄHagio
+	//CentroidFoldï¿½Åƒï¿½ï¿½tï¿½@ï¿½ï¿½ï¿½ï¿½ï¿½Xï¿½ï¿½ï¿½ï¿½ï¿½Hagio
 
 	//temp 37
 
